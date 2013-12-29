@@ -3,9 +3,18 @@
              '("marmalade" . "http://marmalade-repo.org/packages/"))
 (package-initialize)
 
-(load-theme 'zenburn t)
+;;;
+;;; UI
+;;;
 
+(load-theme 'zenburn t)
 (set-default-font "DejaVu Sans Mono 10")
+(menu-bar-mode t)
+
+
+;;;
+;;; Magit
+;;;
 
 (require 'magit)
 
@@ -25,6 +34,21 @@
 
 (define-key magit-status-mode-map (kbd "q") 'magit-quit-session)
 
+;;;
+;;; Erlang Mode.
+;;;
+(setq auto-mode-alist
+   (cons '("\\.erl" . erlang-mode) auto-mode-alist))
+(setq auto-mode-alist
+   (cons '("\\.hrl" . erlang-mode) auto-mode-alist))
+(setq auto-mode-alist
+   (cons '("\\.app" . erlang-mode) auto-mode-alist))
+(setq auto-mode-alist
+   (cons '("\\.rel" . erlang-mode) auto-mode-alist))
+(setq auto-mode-alist
+   (cons '("\\.appup" . erlang-mode) auto-mode-alist))
+(setq auto-mode-alist
+   (cons '("\\.yaws" . erlang-mode) auto-mode-alist))
 
 
 ;;; WINDOW SPLITING
@@ -112,3 +136,8 @@
 (global-set-key (kbd "M-i") 'ido-goto-symbol)
 
 
+;;;
+;;; save all files
+;;;
+(global-set-key (kbd "\C-x\C-s") '(lambda () (interactive) (save-some-buffers t)))
+ 
