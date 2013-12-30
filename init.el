@@ -11,6 +11,10 @@
 (set-default-font "DejaVu Sans Mono 10")
 (menu-bar-mode t)
 
+(ido-vertical-mode 1)
+
+(require 'projectile)
+(projectile-global-mode)
 
 ;;;
 ;;; Magit
@@ -57,13 +61,6 @@
 (global-set-key (kbd "<f5>") 'other-window)
 
 
-;;;
-;;; javascript mode
-;;;
-
-(add-to-list 'auto-mode-alist '("\\.js$"  . js2-mode))
-(add-to-list 'auto-mode-alist '("\\.hbs$" . html-mode))
-(setq js2-basic-offset 2)
 
 ;;;                                                                                        
 ;;; windows navigation                                                                     
@@ -141,3 +138,70 @@
 ;;;
 (global-set-key (kbd "\C-x\C-s") '(lambda () (interactive) (save-some-buffers t)))
  
+
+;;;
+;;; javascript mode
+;;;
+
+(add-to-list 'auto-mode-alist '("\\.js$"  . js2-mode))
+(add-to-list 'auto-mode-alist '("\\.hbs$" . html-mode))
+(setq js2-basic-offset 2)
+
+
+;;;
+;;; erlang mode
+;;;
+
+(add-hook 'erlang-mode-hook (lambda () (linum-mode 1)))
+(add-hook 'erlang-mode-hook (lambda() (setq indent-tabs-mode nil)))
+
+;; export automatique
+
+
+(defun stripwhite (str)
+  "Remove any whitespace from STR."
+  (let ((s (if (symbolp str) (symbol-name str) str)))
+    (replace-regexp-in-string "[ \t\n]*" "" s)))
+
+(defun erlang-move-to-export-insertion ()
+  (interactive)
+    (goto-char (point-max))
+    (if (search-backward-regexp "^-export" 0 t)
+	(end-of-line)
+      (search-backward-regexp "^-" 0 t)
+      (end-of-line)))
+
+(defun erlang-export (fun-arity)
+  (interactive
+   (list (read-no-blanks-input "function/arity: " (erlang-current-function))))
+  (save-excursion
+    (erlang-move-to-export-insertion)
+    (newline)
+    (insert (format "-export ([%s])." fun-arity))))
+
+(defun erlang-current-function ()
+  (save-excursion
+    (if (not (equal (point) (point-max))) (forward-char))
+    (erlang-beginning-of-function)
+    (let ((beg (point))
+	  (fun-name)
+	  (fun-arity)
+	  (result '()))
+      (search-forward "(")
+      (backward-char)
+      (set 'fun-name (stripwhite (buffer-substring beg (point))))
+      (if (char-equal (char-after) ?\))
+	  (set 'fun-arity 0)
+	(forward-char)
+	(set 'fun-arity 0)
+	(while (not (char-equal (char-after) ?\)))
+	  (erlang-forward-arg)
+	  (set 'fun-arity (+ fun-arity 1))))
+      (format "%s/%d" fun-name fun-arity))))
+
+(defun erlang-forward-arg ()
+  (forward-sexp))
+
+
+(add-hook 'erlang-mode-hook (lambda () (local-set-key "\C-ce" 'erlang-export)))
+

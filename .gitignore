@@ -4,3 +4,4 @@ backups
 elpa
 .smex-items
 places
+*.eld
